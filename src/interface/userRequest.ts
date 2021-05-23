@@ -18,9 +18,9 @@ interface userReauest {
 interface Reject {
   password: string;
   password2: string;
-  checkCode: string;
+  chek_code: string;
   email: string;
-  userName: string;
+  name: string;
 }
 
 export { Login, Reject, userReauest }

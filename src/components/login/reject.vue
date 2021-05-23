@@ -6,15 +6,20 @@
     :wrapper-col="wrapperCol"
     ref="formRef"
   >
-    <a-form-item required has-feedback label="用户名" name="userName">
-      <a-input v-model:value="formStateReject.userName" autocomplete="off" />
+    <a-form-item required has-feedback label="用户名" name="name">
+      <a-input v-model:value="formStateReject.name" autocomplete="off" />
     </a-form-item>
     <a-form-item required has-feedback label="邮箱" name="email">
-      <a-input v-model:value="formStateReject.email" autocomplete="off" />
+      <a-input v-model:value="formStateReject.email" @change="getCodeBtnStatus" autocomplete="off" ></a-input>
     </a-form-item>
-    <a-form-item required has-feedback label="验证码" name="checkCode">
-      <a-input v-model:value="formStateReject.checkCode" autocomplete="off" />
+    
+        <a-form-item required has-feedback label="验证码" name="checkCode">
+      <a-input  style="width:220px" v-model:value="formStateReject.chek_code" autocomplete="off" />
+    <a-button type="link" :disabled='codeBtnStatus' @click="getEmaiCode">获取验证码</a-button>
     </a-form-item>
+    
+    
+  
     <a-form-item required has-feedback label="密码" name="password">
       <a-input
         v-model:value="formStateReject.password"
@@ -30,8 +35,8 @@
       />
     </a-form-item>
     <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
-      <a-button type="primary" @click.prevent="onSubmit">注册</a-button>
-      <a-button style="margin-left: 10px">返回登入</a-button>
+      <a-button type="primary" @click.prevent="onSubmit(formStateReject)">注册</a-button>
+      <a-button style="margin-left: 10px" @click="recalLogin">返回登入</a-button>
     </a-form-item>
   </a-form>
 </template>
@@ -42,24 +47,27 @@ import { chekEmai } from "@/hooks/comm";
 import { User } from "@/Api/userRequest";
 import { Reject, userReauest } from "@/interface/userRequest";
 import { isInput, Emails, passwordCheack } from "@/hooks/rules/formRules";
+import { chekFrom } from "@/hooks/check_from";
+
 export default defineComponent({
   name: "login",
   components: {},
   setup(props, ctx) {
     const formRef = ref();
+    let codeBtnStatus = ref(true);
     const formStateReject: UnwrapRef<Reject> = reactive({
-      userName: "",
+      name: "",
       email: "",
-      checkCode: "",
-      password: "123456",
+      chek_code: "",
+      password: "",
       password2: "",
     });
     const rules = {
-      userName: isInput("用户名称", "blur", 2, 18),
+      name: isInput("用户名称", "blur", 2, 18),
       email: [
         { validator: Emails(formStateReject, formRef), trigger: "change" },
       ],
-      checkCode: isInput("验证码", "blur", 6, 6),
+      checkCode: isInput("验证码", "blur", 3, 6),
       password: isInput("密码"),
       password2: [
         {
@@ -69,18 +77,22 @@ export default defineComponent({
       ],
     };
     const onSubmit = async (values: Reject) => {
-      const { result, errorData } = await new User().reject<userReauest>(
-        values
-      );
-      if (errorData.value) {
+
+    const iSchekFrom:boolean= await chekFrom(formRef)
+ 
+    if(iSchekFrom){
+     const { result, errorData } = await new User().reject<userReauest>(values);
+     if (errorData.value) {
         if (result.value?.msg instanceof Array) {
-          //   Notify({ type: "warning", message: result.value.msg[0].message });
+         
         }
-        //  Notify({ type: "warning", message: result.value?.msg as string });
+      
         return;
       }
-      //  Notify({ type: "success", message: "注册成功返回登入" });
+     
       ctx.emit("showLogin", true);
+    }
+ 
     };
 
     const getEmaiCode = async () => {
@@ -91,31 +103,48 @@ export default defineComponent({
         return;
       }
       let isEmai = chekEmai(email);
-
       if (!isEmai) {
         //  Notify({ type: "warning", message: "请输入正确的邮箱" });
         return;
       }
       let getData = {
-        codeType: 1000,
-        userName: email,
+        code_type: 1000,
+        email: email,
       };
       // 发送邮箱到给用户
       const {
         result,
         errorData,
       } = await new User().getValidataCode<userReauest>(getData);
-      //   console.log(result.value, errorData.value);
+      // console.log(result.value, errorData.value);
       if (errorData.value) {
         if (result.value?.msg instanceof Array) {
-          //   Notify({ type: "warning", message: result.value.msg[0].message });
+          // Notify({ type: "warning", message: result.value.msg[0].message });
         }
       }
     };
     const recalLogin = () => {
       ctx.emit("showLogin", true);
     };
+    // 获取验证码状态
+    const getCodeBtnStatus = ():Boolean=>{
+      const {email} = formStateReject
+      if (!email) {
+        codeBtnStatus.value = true;
+        return codeBtnStatus.value
+      }
+      let isEmai = chekEmai(email);
+      if (!isEmai) {     
+       codeBtnStatus.value = true;
+       return codeBtnStatus.value
+      }
+      console.log("邮箱输入了")
+      return codeBtnStatus.value = false
+    }
+     
+    
     return {
+      formRef,
       formStateReject,
       onSubmit,
       recalLogin,
@@ -123,6 +152,8 @@ export default defineComponent({
       rules,
       labelCol: { span: 4 },
       wrapperCol: { span: 14 },
+      getCodeBtnStatus,
+      codeBtnStatus
     };
   },
 });

@@ -9,11 +9,11 @@
           <div id="content">
             <div id="vision">
               <p class="visionTop">当前版本号：123132</p>
-              <p class="visionMiddle">易判智能执行管理系统</p>
-              <p class="visionBottom">让法律看得见，让判判更容易</p>
+              <p class="visionMiddle">测试聊天系统系统</p>
+              <p class="visionBottom">让法律更简单，让社交更容易</p>
             </div>
             <p class="visionDate"></p>
-            <div class="visionAcitve">激活</div>
+           
             <div class="lognicon">
               <img src="../assets/img/login-left.png" alt="" />
             </div>

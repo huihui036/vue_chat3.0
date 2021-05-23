@@ -1,11 +1,12 @@
 import axios from 'axios'
-const Url = 'http://127.0.0.1:7001'
+const Url = 'http://127.0.0.1:7002'
 import { ref } from 'vue'
 import { Reject, Login } from '@/interface/userRequest'
 interface getValidataCode {
-  codeType: number,
-  userName: string
+  code_type: number,
+  email: string
 }
+
 
 const instance = axios.create({
   baseURL: process.env.VUE_APP_BASE_URL
@@ -28,6 +29,7 @@ async function getValidataCode<T>(url: string) {
 
 
 class User {
+  // 获取验证码
   async getValidataCode<T>(data: getValidataCode) {
     const result = ref<T | null>(null)
     const errorData = ref(false)
@@ -42,7 +44,7 @@ class User {
       errorData,
     }
   }
-
+  // 用户注册
   async reject<T>(data: Reject) {
     const result = ref<T | null>(null)
     const errorData = ref(false)
@@ -57,6 +59,7 @@ class User {
       errorData,
     }
   }
+  // 用户登入
   async login<T>(data: Login) {
     const result = ref<T | null>(null)
     const errorData = ref(false)
